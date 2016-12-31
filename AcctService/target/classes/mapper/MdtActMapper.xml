@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtActMapper">
+<!-- 受托户会计余额账 -->
+	<resultMap id="mdtDet" type="com.opm.acct.mdt.model.MdtActModel">
+	    <result column="ACT_ID" property="actId"></result>
+		<result column="MDT_SUBJECT_TYPE" property="mdtSubjectType"></result>
+		<result column="Amt" property="amt"></result>
+		<result column="UPDATE_TIME" property="updateTime"></result>
+	</resultMap>
+	
+	<!-- 插入受托户会计余额账表 -->
+	<insert id="insertMdtDet" parameterType="String">
+	 MERGE INTO opm_mdt_act a
+        USING (SELECT t1.mdt_subject_type,
+                      nvl(SUM(case when t1.mdt_subject_type IN ('1002', '1204','6404', '6405', '6605') then  decode(t1.debit_credit_flag, 1, 1, 2, -1)* t1.trade_amt
+                 when t1.mdt_subject_type IN ('2207', '2210', '2211', '2221', '6011', '4001', '4103', '4104') OR mdt_subject_type LIKE '2241%' then 
+                 decode(t1.debit_credit_flag, 2, 1, 1, -1)  * t1.trade_amt else 0 end),
+                          0) trade_amt
+                 FROM opm_mdt_det_trd t1
+                WHERE t1.trade_amt != 0
+                GROUP BY t1.mdt_subject_type) b
+        ON (a.mdt_subject_type = b.mdt_subject_type AND a.act_id = #{actId,jdbcType=VARCHAR})
+        WHEN MATCHED THEN
+            UPDATE
+               SET a.amt         = a.amt + b.trade_amt,
+                   a.update_time = SYSDATE
+        WHEN NOT MATCHED THEN
+            INSERT
+                (act_id, mdt_subject_type, amt, update_time)
+            VALUES
+                (#{actId,jdbcType=VARCHAR}, b.mdt_subject_type, b.trade_amt, SYSDATE);
+    </insert>
+    
+</mapper>

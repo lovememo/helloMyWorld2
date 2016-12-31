@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.voucher.order.mapper.OrderMapper">
+	<!-- 指令信息 -->
+	<resultMap id="getDictateInf" type="com.opm.voucher.order.entity.DictateInf">
+		<result column="DICTATE_NO" property="dictateNo"></result>
+		<result column="ORDER_TYPE" property="orderType"></result>
+		<result column="INVEST_ID" property="investId"></result>
+		<result column="APP_NO" property="appNo"></result>
+		<result column="SUMMARY" property="summary"></result>
+		<result column="DOWNLOAD_COUT" property="downloadCount"></result>
+		<result column="SYS_TIME" property="sysTime"></result>
+		<result column="FILE_CONTENT" property="fileContent"></result>
+		<result column="FILE_FLAG" property="fileFlag"></result>		
+	</resultMap>
+
+    <!-- 若不需要自动返回主键，将useGeneratedKeys="true" keyProperty="id"去掉即可(当然如果不需要自动返回主键，直接用注解即可) -->
+    <insert id="insertOrder">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE">
+            SELECT SEQ_ORDER_ID.nextval FROM dual
+        </selectKey>
+        insert into opm_order_info(ORDER_ID,PLAN_ID,ORDER_TYPE,APP_NO,CO_PLAN_FLAG,SYS_TIME,VALID_FLAG) values (#{id},#{planId},#{orderType},#{appId},#{coPlanFlag},#{updateTime},#{validFlag})
+    </insert>
+
+
+    <!-- 接口<br> 指令生成 -->
+    <insert id="insertDictate">
+        <selectKey resultType="String" keyProperty="dictateNo" order="BEFORE">
+            SELECT SEQ_NO.nextval FROM dual
+        </selectKey>
+        insert into opm_dictate_inf(DICTATE_NO,ORDER_TYPE,INVEST_ID,APP_NO,SUMMARY,FILE_FLAG)
+         values (#{dictateNo,jdbcType=VARCHAR},#{orderType,jdbcType=VARCHAR},#{investId,jdbcType=VARCHAR},#{appNo,jdbcType=VARCHAR},#{summary,jdbcType=VARCHAR},#{fileFlag,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateDictate">
+        update opm_dictate_inf
+           set FILE_FLAG = #{fileFlag,jdbcType=VARCHAR},
+               FILE_CONTENT = #{fileContent,jdbcType=BLOB}
+         where DICTATE_NO=#{dictateNo,jdbcType=VARCHAR}
+    </update>
+    <select id="getOrderList" resultType="map">
+		SELECT decode(t.order_type,
+		              '01', '计划基本信息',
+		              '02', '投资组合信息',
+		              '03', '定价日信息通知',
+		              '04', '投资成交预处理通知',
+		              '05', '统一计划成交汇总',
+		              '06', '计划成交汇总',
+		              '07', '投资分配指令',
+		              '08', '资金划拨指令',
+		              '09', '支付指令',
+		              '10', '支付指令明细',
+		              '11', '支付（税金）指令',
+		              '12', '支付结果通知',
+		              '13', '费用支付指令',
+		              '14', '风险准备金提取通知') order_type,
+		       t.summary,
+		       t.dictate_no,
+		       t.app_no,
+		       to_char(t.sys_time, 'yyyy-mm-dd') app_time,
+		       t.download_count
+		  FROM opm_dictate_inf t
+		 WHERE t.sys_time&gt;=to_date(#{beginDate,jdbcType=VARCHAR},'yyyy/mm/dd hh24:mi:ss')
+		   AND t.sys_time&lt;=to_date(#{endDate,jdbcType=VARCHAR},'yyyy/mm/dd hh24:mi:ss')
+		   AND t.order_type=decode(#{orderType,jdbcType=VARCHAR}, '' , t.order_type, #{orderType,jdbcType=VARCHAR})
+		 ORDER BY t.sys_time DESC
+	</select>
+	<select id="exportOrderReport" resultMap="getDictateInf">
+		SELECT t.file_content,
+			   decode(t.order_type,
+		              '01', '计划基本信息',
+		              '02', '投资组合信息',
+		              '03', '定价日信息通知',
+		              '04', '投资成交预处理通知',
+		              '05', '统一计划成交汇总',
+		              '06', '计划成交汇总',
+		              '07', '投资分配指令',
+		              '08', '资金划拨指令',
+		              '09', '支付指令',
+		              '10', '支付指令明细',
+		              '11', '支付（税金）指令',
+		              '12', '支付结果通知',
+		              '13', '费用支付指令',
+		              '14', '风险准备金提取通知') order_type
+		  FROM opm_dictate_inf t
+		 WHERE t.dictate_no = #{dictateNo,jdbcType=VARCHAR}
+	</select>
+</mapper>
+

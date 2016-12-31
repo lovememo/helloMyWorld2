@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtActInfMapper">
+<!-- 受托户信息表 -->
+	<resultMap id="mdtActInf" type="com.opm.acct.mdt.model.MdtActInfModel">
+	    <result column="ACT_ID" property="actId"></result>                      
+   		<result column="ACT_RATE" property="actRate"></result>
+   		<result column="ACT_DATE" property="actDate"></result>                        
+   		<result column="MDTFEE_RATE" property="mdtfeeRate"></result>
+   		<result column="TRUSTFEE_RATE" property="trustfeeRate"></result>
+	</resultMap>
+	<!-- 获取受托户信息 -->
+	<select id="getMdtActInf" parameterType="String">
+		SELECT act_id, act_rate,act_date,mdtfee_rate,trustfee_rate  
+		FROM opm_mdt_act_inf t WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+	</select>
+	
+    
+</mapper>

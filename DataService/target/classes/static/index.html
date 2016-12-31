@@ -1,0 +1,34 @@
+<html lang="en">
+<head>
+    <meta charset="GBK">
+    <title>Title</title>
+<script type="text/javascript">
+    function aasubmit(src) {
+        var fileId = "dtlFile"+src;
+        var fileNameId = "dtlFileName"+src;
+        var formId = "fileForm" + src;
+        var fullPath = document.getElementById(fileId).value;
+        var fileName = fullPath == "" ? "" : fullPath.substring(fullPath.lastIndexOf("\\") + 1);
+        document.getElementById(fileNameId).value=fileName;
+        document.getElementById(formId).submit();
+
+    }
+</script>
+</head>
+<body>
+<form name="fileForm1" id="fileForm" method="POST" enctype="multipart/form-data" action="/file/upload">
+    File to upload: <input type="file" id="dtlFile1" name="dtlFile"><input type="hidden" name="dtlFileName" id="dtlFileName1"/>
+    <input type="button" onclick="aasubmit('1');" value="Upload"> Press here to upload the file to data service directly!
+</form>
+
+<form name="fileForm2" id="fileForm2" method="POST" enctype="multipart/form-data" action="http://localhost:8080/zuul/data/file/upload">
+    File to upload: <input type="file" id="dtlFile2" name="dtlFile"><input type="hidden" name="dtlFileName" id="dtlFileName2"/>
+    <input type="button" onclick="aasubmit('2');" value="Upload"> Press here to upload the file through gateway!
+</form>
+
+<form name="fileForm3" id="fileForm3" method="POST" action="/file/download">
+    File to upload: <input type="text" id="serialNo" name="serialNo" value="92">
+    <input type="submit"  value="download"> Press here to download
+</form>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.core.workflow.mapper.AppMapper">
+
+	<!-- 若不需要自动返回主键，将useGeneratedKeys="true" keyProperty="id"去掉即可(当然如果不需要自动返回主键，直接用注解即可) -->
+	<insert id="updateAppState">
+       UPDATE OPM_APP set APP_STATE = #{appState,jdbcType = INTEGER} WHERE APP_NO = #{appNo,jdbcType = INTEGER}
+	</insert>
+
+	<resultMap id="appBasicInfo" type="com.opm.common.core.AppBasicInfo">
+		<result column="APP_NO" property="appId"></result>
+		<result column="PLAN_ID" property="planId"></result>
+		<result column="PLAN_NAME" property="planName"></result>
+	</resultMap>
+
+	<select id="getPlanAppInfo" resultMap="appBasicInfo" parameterType="long">
+       SELECT APP_NO,PLAN_ID FROM OPM_APP WHERE APP_NO = #{appNo,jdbcType = INTEGER}
+	</select>
+</mapper>

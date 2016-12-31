@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.opm.core.plan.mapper.PlanRoleMapper">
+	<!-- 计划申请信息 -->
+	<resultMap id="planRole" type="com.opm.core.plan.model.PlanRoleModel">
+		<result column="APP_NO" property="appNo"></result>
+		<result column="TRD_NO" property="trdNo"></result>
+		<result column="PLAN_ID" property="planId"></result>
+		<result column="STATUS_TYPE" property="statusType"></result>
+		<result column="STRU_ID" property="struId"></result>
+		<result column="ORG_CODE" property="orgCode"></result>
+		<result column="SUBINSTID" property="subinstid"></result>
+		<result column="ADDR" property="addr"></result>
+		<result column="ZIPCODE" property="zipcode"></result>
+		<result column="BUSI_MGR" property="busiMgr"></result>
+		<result column="TEL" property="tel"></result>
+		<result column="FAX" property="fax"></result>
+		<result column="EMAIL" property="email"></result>
+		<result column="STRU_NAME" property="struName"></result>
+	</resultMap>
+	<!-- 基本信息app -->
+	<select id="selectPlanRoleApp" resultMap="planRole">
+	 	select app_no,
+	     plan_id,
+	     stru_id,
+	     org_code,
+	     subinstid,
+	     addr,
+	     zipcode,
+	     busi_mgr,
+	     tel,
+	     fax,
+	     email,
+	     status_type,
+	     stru_name
+		 from opm_role_app
+		where app_no = #{appNo, jdbcType = VARCHAR}
+		    <if test="planId != null and planId != ''">
+		   	 and  plan_id = #{planId, jdbcType = VARCHAR}
+		   	</if>
+		    <if test="struId != null and struId != ''">
+		   	 and  stru_id = #{struId, jdbcType = VARCHAR}
+		   	</if>
+	</select>
+	<insert id="insertPlanRoleApp" parameterType="com.opm.core.plan.model.PlanRoleModel">
+	  INSERT INTO opm_role_app
+	    (app_no,
+	     plan_id,
+	     stru_id,
+	     org_code,
+	     subinstid,
+	     addr,
+	     zipcode,
+	     busi_mgr,
+	     tel,
+	     fax,
+	     email,
+	     status_type,
+	     stru_name)
+	VALUES
+		(#{appNo, jdbcType = VARCHAR},
+		#{planId, jdbcType = VARCHAR},
+		#{struId, jdbcType = VARCHAR},
+		#{orgCode, jdbcType = VARCHAR},
+		#{subinstid, jdbcType = VARCHAR},
+		#{addr, jdbcType = VARCHAR},
+		#{zipcode, jdbcType = VARCHAR},
+		#{busiMgr, jdbcType = VARCHAR},
+		#{tel, jdbcType = VARCHAR},
+		#{fax, jdbcType = VARCHAR},
+		#{email, jdbcType = VARCHAR},
+		#{statusType, jdbcType = VARCHAR},
+		#{struName, jdbcType = VARCHAR}
+	)
+	</insert>
+	<update id="updatePlanRoleApp" parameterType="com.opm.core.plan.model.PlanRoleModel">
+		update opm_role_app
+		   set  org_code = #{orgCode, jdbcType = VARCHAR},
+				subinstid = #{subinstid, jdbcType = VARCHAR},
+				addr = #{addr, jdbcType = VARCHAR},
+				zipcode = #{zipcode, jdbcType = VARCHAR},
+				busi_mgr = #{busiMgr, jdbcType = VARCHAR},
+				tel = #{tel, jdbcType = VARCHAR},
+				fax = #{fax, jdbcType = VARCHAR},
+				email = #{email, jdbcType = VARCHAR},
+				statusType = #{statusType, jdbcType = VARCHAR},
+				status_name = #{struName, jdbcType = VARCHAR}
+		where app_no = #{appNo, jdbcType = VARCHAR}
+		  and plan_id = #{planId, jdbcType = VARCHAR}
+		  and stru_id = #{struId, jdbcType = VARCHAR}
+	</update>
+	<delete id="deletePlanRoleApp" parameterType="com.opm.core.plan.model.PlanRoleModel">
+		delete from opm_role_app
+		where app_no = #{appNo, jdbcType = VARCHAR}
+		  and plan_id = #{planId, jdbcType = VARCHAR}
+		  and stru_id = #{struId, jdbcType = VARCHAR}
+	</delete>
+
+	<!-- 基本信息trd -->
+	<insert id="insertPlanRoleTrd" parameterType="com.opm.core.plan.model.PlanRoleModel">
+	INSERT INTO opm_role_trd
+		(trd_no,
+	     plan_id,
+	     stru_id,
+	     org_code,
+	     subinstid,
+	     addr,
+	     zipcode,
+	     busi_mgr,
+	     tel,
+	     fax,
+	     email,
+	     status_type,
+	     stru_name)
+	VALUES
+		(#{trdNo, jdbcType = VARCHAR},
+		#{planId, jdbcType = VARCHAR},
+		#{struId, jdbcType = VARCHAR},
+		#{orgCode, jdbcType = VARCHAR},
+		#{subinstid, jdbcType = VARCHAR},
+		#{addr, jdbcType = VARCHAR},
+		#{zipcode, jdbcType = VARCHAR},
+		#{busiMgr, jdbcType = VARCHAR},
+		#{tel, jdbcType = VARCHAR},
+		#{fax, jdbcType = VARCHAR},
+		#{email, jdbcType = VARCHAR},
+		#{statusType, jdbcType = VARCHAR},
+		#{struName, jdbcType = VARCHAR}
+	)
+	</insert>
+	
+	<!-- 基本信息inf -->
+	<insert id="insertPlanRoleInf" parameterType="com.opm.core.plan.model.PlanRoleModel">
+	INSERT INTO opm_role_inf
+		(plan_id,
+	     stru_id,
+	     org_code,
+	     subinstid,
+	     addr,
+	     zipcode,
+	     busi_mgr,
+	     tel,
+	     fax,
+	     email,
+	     status_type,
+	     stru_name)
+	VALUES
+		(#{planId, jdbcType = VARCHAR},
+		#{struId, jdbcType = VARCHAR},
+		#{orgCode, jdbcType = VARCHAR},
+		#{subinstid, jdbcType = VARCHAR},
+		#{addr, jdbcType = VARCHAR},
+		#{zipcode, jdbcType = VARCHAR},
+		#{busiMgr, jdbcType = VARCHAR},
+		#{tel, jdbcType = VARCHAR},
+		#{fax, jdbcType = VARCHAR},
+		#{email, jdbcType = VARCHAR},
+		#{statusType, jdbcType = VARCHAR},
+		#{struName, jdbcType = VARCHAR}
+	)
+	</insert>
+	<select id="selectPlanRoleInf" resultMap="planRole">
+	 	select
+	     plan_id,
+	     stru_id,
+	     org_code,
+	     subinstid,
+	     addr,
+	     zipcode,
+	     busi_mgr,
+	     tel,
+	     fax,
+	     email,
+	     status_type,
+	     stru_name
+		 from opm_role_inf
+		where plan_id = #{planId, jdbcType = VARCHAR}
+	</select>
+	<update id="updatePlanRoleInf" parameterType="com.opm.core.plan.model.PlanRoleModel">
+		update opm_role_inf
+		   set  org_code = #{orgCode, jdbcType = VARCHAR},
+				subinstid = #{subinstid, jdbcType = VARCHAR},
+				addr = #{addr, jdbcType = VARCHAR},
+				zipcode = #{zipcode, jdbcType = VARCHAR},
+				busi_mgr = #{busiMgr, jdbcType = VARCHAR},
+				tel = #{tel, jdbcType = VARCHAR},
+				fax = #{fax, jdbcType = VARCHAR},
+				email = #{email, jdbcType = VARCHAR}
+		where plan_id = #{planId, jdbcType = VARCHAR}
+		  and stru_id = #{struId, jdbcType = VARCHAR}
+	</update>
+</mapper>

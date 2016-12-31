@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtActMoRptMapper">
+<!-- 受托户会计余额月转存表-->
+	<resultMap id="mdtActMoRpt" type="com.opm.acct.mdt.model.MdtActMoRptModel">
+		<result column="ACT_ID" property="actId"></result>
+		<result column="OP_DATE" property="opDate"></result>
+		<result column="MDT_SUBJECT_TYPE" property="mdtSubjectType"></result>
+		<result column="AMT" property="amt"></result>
+		<result column="UPDATE_TIME" property="updateTime"></result>
+	</resultMap>
+	
+	<!-- 获取受托户会计余额月转存信息--> 
+	<select id="getMdtActMoRpt" parameterType="String">
+		 SELECT act_id, op_date,mdt_subject_type,amt,update_time 
+          FROM opm_mdt_act_mo_rpt t
+         WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+           AND t.op_date = #{date,jdbcType=VARCHAR}
+           AND t.mdt_subject_type = #{mdtSubjectType,jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 获取余额--> 
+	<select id="getAmt" parameterType="String">
+		  SELECT nvl(MAX(t.amt), 0)
+          FROM opm_mdt_act_mo_rpt t
+         WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+           AND t.op_date = #{date,jdbcType=VARCHAR}
+           AND t.mdt_subject_type = #{mdtSubjectType,jdbcType=VARCHAR};
+	</select>
+	 <!-- 插入受托户会计余额月转存表-->
+    <insert id="insertMdtActMoRpt" parameterType="java.util.List">
+	  INSERT INTO opm_mdt_act_mo_rpt
+                (act_id, op_date,mdt_subject_type,amt,update_time)
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+              	select
+			#{item.actId,jdbcType=VARCHAR},#{item.opDate,jdbcType=VARCHAR},
+			#{item.mdtSubjectType,jdbcType=VARCHAR},
+			#{item.amt,jdbcType=DOUBLE},SYSDATE 
+			from dual
+
+             </foreach>      
+           
+    </insert>
+    <!-- 月末 取消月末报表--> 
+	<delete id="deleteMdtActMoRpt" parameterType="String">
+		  DELETE FROM opm_mdt_act_mo_rpt t
+                 WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+                   AND t.op_date = #{date,jdbcType=VARCHAR};
+	</delete>
+</mapper>

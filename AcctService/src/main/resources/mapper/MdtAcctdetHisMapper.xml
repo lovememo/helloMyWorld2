@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtAcctdetHisMapper">
+<!-- 受托户资金账务信息历史表 -->
+	<resultMap id="mdtAcctdetHis" type="com.opm.acct.mdt.model.MdtAcctdetHisModel">
+		 <result column="SEQ_ID" property="seqId"></result>
+		<result column="ACT_ID" property="actId"></result>
+		<result column="OP_DATE" property="opDate"></result>
+		<result column="OP_TIME" property="opTime"></result>
+		<result column="IN_TRADE_AMT" property="inTradeAmt"></result>
+		<result column="OUT_TRADE_AMT" property="outTradeAmt"></result>
+		<result column="AMT" property="amt"></result>
+		<result column="OPP_ACCT_NO" property="oppAcctNo"></result>
+		<result column="OPP_ACCT_NAME" property="oppAcctName"></result>
+		<result column="CONFIRM_STATE" property="confirmState"></result>
+		<result column="DEAL_TYPE" property="dealType"></result>
+		<result column="SUMMARY1" property="summary1"></result>
+		<result column="SUMMARY2" property="summary2"></result>
+		<result column="MEMO" property="memo"></result>
+		<result column="UPDATE_TIME" property="updateTime"></result>
+		<result column="VALID_FLAG" property="validFlag"></result>
+		<result column="TRD_NO" property="trdNo"></result>
+	</resultMap>
+	
+	
+	<!-- 受托户资金账务信息历史表更新 -->
+	<insert id="insertMdtAcctDetHis" parameterType="String">
+	   INSERT INTO opm_mdt_acctdet_his
+            (seq_id,
+             act_id,
+             op_date,
+             op_time,
+             in_trade_amt,
+             out_trade_amt,
+             amt,
+             opp_acct_no,
+             opp_acct_name,
+             confirm_state,
+             deal_type,
+             summary1,
+             summary2,
+             memo,
+             trd_no,
+             update_time,
+             valid_flag)
+            (SELECT seq_id,
+                    act_id,
+                    op_date,
+                    op_time,
+                    in_trade_amt,
+                    out_trade_amt,
+                    amt,
+                    opp_acct_no,
+                    opp_acct_name,
+                    confirm_state,
+                    deal_type,
+                    summary1,
+                    summary2,
+                    memo,
+                    trd_no,
+                    update_time,
+                    valid_flag
+               FROM opm_mdt_acctdet_inf t1
+              WHERE trd_no =  #{trdNo,jdbcType=VARCHAR})
+
+    </insert>
+   
+</mapper>

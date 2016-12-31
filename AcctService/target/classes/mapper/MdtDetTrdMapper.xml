@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtDetTrdMapper">
+<!-- 受托户会计记账交易表 -->
+	<resultMap id="mdtDetTrd" type="com.opm.acct.mdt.model.MdtDetTrdModel">
+		<result column="OP_DATE" property="opDate"></result>
+		<result column="MDT_SUBJECT_TYPE" property="mdtSubjectType"></result>
+		<result column="DEBIT_CREDIT_FLAG" property="debitCreditFlag"></result>
+		<result column="TRADE_AMT" property="tradeAmt"></result>
+		<result column="TRD_NO" property="trdNo"></result>
+		<result column="MEMO" property="memo"></result>
+	</resultMap>
+	
+    
+     <!-- 受托户明细导入-插入受托户会计记账交易表 -->
+	<insert id="insertMdtDetTrdForImp" parameterType="java.util.List" >
+	 INSERT INTO opm_mdt_det_trd
+                (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo)
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+                (SELECT op_date,
+                        #{item.mdtSubjectType,jdbcType=VARCHAR},
+                        #{item.debitCreditFlag,jdbcType=VARCHAR},
+                        in_trade_amt,
+                        trd_no,
+                        memo
+                   FROM opm_mdt_acctdet_trd t
+                  WHERE t.trd_no = #{trdNo,jdbcType=VARCHAR}
+                    AND t.in_trade_amt IS NOT NULL
+                    AND t.deal_type IS NULL)
+             </foreach>      
+	</insert>
+	
+    <!-- 受托户导入插入利息信息 -->
+    <insert id="insertDrawForImp" parameterType="String">
+	 INSERT INTO opm_mdt_det_trd (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo) 
+           SELECT #{opDate,jdbcType=VARCHAR}, c.subjectType, c.debitCreditFlag, c.trade_amt, NULL, #{trdNo,jdbcType=VARCHAR}, '计息' 
+           FROM 
+                   (SELECT  '1204' as subjectType, '1' as debitCreditFlag, a.act_rate * b.amt/ 360 / 100  as trade_amt  FROM opm_act_info a ,
+                           (SELECT nvl(MAX(amt), 0) as amt
+                             FROM opm_mdt_acctdet_inf t
+                             WHERE t.seq_id =(SELECT MAX(seq_id)  
+                                              FROM (SELECT seq_id, rownum rw
+                                                    FROM (SELECT seq_id 
+                                                          FROM opm_mdt_acctdet_inf t
+                                                          WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+							                                       AND t.op_date &lt;= #{opDate,jdbcType=VARCHAR}
+							                                       AND t.valid_flag = 0
+							                                       AND t.amt IS NOT NULL
+							                                     ORDER BY op_date DESC,
+							                                              seq_id  DESC))
+
+                     						   WHERE rw = 1)) b 
+                    WHERE a.act_id = #{actId,jdbcType=VARCHAR}
+                    union all 
+                    SELECT  '6011' as subjectType, '2' as debitCreditFlag, a.act_rate * b.amt/ 360 / 100  as trade_amt  FROM opm_act_info a ,
+                           (SELECT nvl(MAX(amt), 0) as amt
+                             FROM opm_mdt_acctdet_inf t
+                             WHERE t.seq_id =(SELECT MAX(seq_id)  
+                                              FROM (SELECT seq_id, rownum rw
+                                                    FROM (SELECT seq_id 
+                                                          FROM opm_mdt_acctdet_inf t
+                                                          WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+							                                       AND t.op_date &lt;= #{opDate,jdbcType=VARCHAR}
+							                                       AND t.valid_flag = 0
+							                                       AND t.amt IS NOT NULL
+							                                     ORDER BY op_date DESC,
+							                                              seq_id  DESC))
+
+                     						   WHERE rw = 1)) b 
+                    WHERE a.act_id = #{actId,jdbcType=VARCHAR}) c
+           
+    </insert>
+    
+    <!-- 借贷明细总额校验 -->
+	<select id="debitCreditAmtCheck" parameterType="String">
+	  SELECT  case when (nvl(SUM(decode(t1.debit_credit_flag, 1, t1.trade_amt, 0)), 0) =
+               nvl(SUM(decode(t1.debit_credit_flag, 2, t1.trade_amt, 0)), 0)) then 0 else 1 end
+          
+          FROM opm_mdt_det_trd t1
+          WHERE t1.trd_no = #{trdNo,jdbcType=VARCHAR};
+    </select>
+    
+    <!-- 会记记账恒等式校验-->
+	<select id="debitTradeAmtCheck" parameterType="String">
+	  SELECT  nvl(sum(k.amt),0) from (SELECT decode(t1.debit_credit_flag, 1, 1, 2, -1)  * t1.trade_amt as amt FROM dual , opm_mdt_det_trd t1 where 
+
+       t1.mdt_subject_type IN ('1002', '1204','6404', '6405', '6605') and t1.trd_no =  #{trdNo,jdbcType=VARCHAR} union all 
+       
+       SELECT -(decode(t1.debit_credit_flag, 2, 1, 1, -1)  * t1.trade_amt) as amt  FROM dual , opm_mdt_det_trd t2 where 
+        t2.trd_no =  #{trdNo,jdbcType=VARCHAR} and t2.mdt_subject_type IN ('2207', '2210', '2211', '2221', '6011', '4001', '4103', '4104') OR t2.mdt_subject_type LIKE '2241%') k
+    </select>
+    
+    <!-- 受托户明细修改-插入受托户会计记账交易表 -->
+	<insert id="insertMdtDetTrdForMod" parameterType="java.util.List" >
+	 INSERT INTO opm_mdt_det_trd
+                (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo)
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+                (SELECT t1.op_date,
+                   #{item.mdtSubjectType,jdbcType=VARCHAR},
+                        #{item.debitCreditFlag,jdbcType=VARCHAR},
+                    CASE
+                        WHEN t2.deal_type IS NULL AND t1.deal_type IS NOT NULL THEN
+                         -t1.in_trade_amt
+                        WHEN t2.deal_type IS NOT NULL AND t1.deal_type IS NULL THEN
+                         t1.in_trade_amt
+                        ELSE
+                         0
+                    END,
+                    NULL,
+                    #{trdNo,jdbcType=VARCHAR},
+                    '交易类型变更'
+               FROM opm_mdt_acctdet_trd t1,
+                    opm_mdt_acctdet_inf t2
+              WHERE t1.trd_no = #{trdNo,jdbcType=VARCHAR}
+                AND t1.seq_id = t2.seq_id
+                AND t1.op_date >= #{actDate,jdbcType=VARCHAR}
+                AND nvl(t1.in_trade_amt, 0) != 0)
+             </foreach>      
+	</insert>
+	
+	  <!-- 日结插入利息信息-->
+    <insert id="insertDrawForDayend" parameterType="String">
+	 INSERT INTO opm_mdt_det_trd (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo) 
+           SELECT #{opDate,jdbcType=VARCHAR}, c.subjectType, c.debitCreditFlag, c.trade_amt, NULL, #{trdNo,jdbcType=VARCHAR}, '计息' 
+           FROM 
+              (SELECT  '1204' as subjectType, '1' as debitCreditFlag, a.act_rate * #{amt,jdbcType=DOUBLE}/ 360 / 100  as trade_amt  
+               FROM opm_act_info a 
+               WHERE a.act_id = #{actId,jdbcType=VARCHAR}
+               union all 
+               SELECT  '6011' as subjectType, '2' as debitCreditFlag, a.act_rate * #{amt,jdbcType=DOUBLE}/ 360 / 100  as trade_amt  
+               FROM opm_act_info a
+               WHERE a.act_id = #{actId,jdbcType=VARCHAR}
+              ) c
+           
+    </insert>
+    
+      <!-- 插入受托户会计记账交易表-->
+    <insert id="insertMdtDetTrd" parameterType="java.util.List">
+	  INSERT INTO opm_mdt_det_trd
+                (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo)
+            <foreach collection="list" item="item" index="index" separator="union" open="(" close=")">
+              	select
+			#{item.opDate,jdbcType=VARCHAR},#{item.mdtSubjectType,jdbcType=VARCHAR},
+			#{item.debitCreditFlag,jdbcType=VARCHAR},#{item.tradeAmt,jdbcType=VARCHAR},
+			#{item.trdNo,jdbcType=VARCHAR},
+			#{item.memo,jdbcType=VARCHAR}
+			from dual
+
+             </foreach>      
+           
+    </insert>
+    <!-- 冲回第二日受托户受托管理费和托管费的账务处理 -->
+	<insert id="reverseMdtAndTrustFee" parameterType="String" >
+              INSERT INTO opm_mdt_det_trd
+                (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo)
+                (SELECT op_date,
+                        mdt_subject_type,
+                        debit_credit_flag,
+                        -trade_amt,
+                        #{trdNo,jdbcType=VARCHAR},
+                        '取消日结'
+                   FROM opm_mdt_det t
+                  WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+                    AND t.op_date = to_char(to_date(#{date,jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1, 'YYYY-MM-DD')
+                    AND t.trd_no = #{trdNo,jdbcType=VARCHAR}
+                       --AND t.mdt_subject_type IN ('6405', '2210', '6404', '2207')
+                    AND t.memo IN ('受托费计提', '托管费计提')
+
+                 );     
+	</insert>
+	<!-- 冲回月末损益结转 -->
+	<insert id="reverseMdtMonAcct" parameterType="String" >
+                   INSERT INTO opm_mdt_det_trd
+                    (op_date, mdt_subject_type, debit_credit_flag, trade_amt, trd_no, memo)
+                    (SELECT op_date,
+                            mdt_subject_type,
+                            debit_credit_flag,
+                            -trade_amt,
+                             #{trdNo,jdbcType=VARCHAR},
+                            '取消日结'
+                       FROM opm_mdt_det t
+                      WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+                        AND t.trd_no = #{trdNo,jdbcType=VARCHAR}
+                        AND ((t.op_date = #{date,jdbcType=VARCHAR} AND t.memo IN ('损益结转', '利润结转')) OR
+                            (t.op_date BETWEEN #{beginDateDraw,jdbcType=VARCHAR} AND #{date,jdbcType=VARCHAR} AND t.memo IN ('计息')))
+
+                     );
+                 
+	</insert>
+	<!-- 冲账-插入受托户会计记账交易表 -->
+	<insert id="insertMdtDetTrdForReverAct" parameterType="String" >
+                   INSERT INTO opm_mdt_det_trd
+            (op_date, mdt_subject_type, debit_credit_flag, trade_amt,  trd_no, memo)
+            (SELECT op_date,
+                    mdt_subject_type,
+                    debit_credit_flag,
+                    -trade_amt,
+                    #{trdNo,jdbcType=VARCHAR},
+                    '冲账'
+               FROM opm_mdt_det t
+              WHERE t.seq_id IN (SELECT seq_id FROM opm_mdt_adj_act_trd t WHERE t.trd_no = #{trdNo,jdbcType=VARCHAR));
+                 
+	</insert>
+</mapper>

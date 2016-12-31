@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtActRelMapper">
+<!-- 受托户关系表 -->
+	<resultMap id="mdtActRel" type="com.opm.acct.mdt.model.MdtActRelModel">
+	    <result column="ACT_ID" property="actId"></result>                      
+   		<result column="REL_ID" property="relId"></result>
+   		<result column="REL_TYPE" property="relType"></result>                        
+	</resultMap>
+	
+	<!-- 获取受托户关系信息-->
+	<select id="getMdtActRel" parameterType="String" resultMap="mdtActRel">
+		 SELECT act_id,rel_id,rel_type
+              FROM opm_mdt_act_rel 
+             WHERE  rel_id = #{relId,jdbcType=VARCHAR}
+	</select>
+    
+</mapper>

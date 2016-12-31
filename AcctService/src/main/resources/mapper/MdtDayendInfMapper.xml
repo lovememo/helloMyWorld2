@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtDayendInfMapper">
+<!-- 受托户核算日终信息表 -->
+	<resultMap id="mdtDayEndInf" type="com.opm.acct.mdt.model.MdtDayendInfModel">
+		<result column="ACT_ID" property="actId"></result>
+		<result column="DAYEND_DATE" property="dayendDate"></result>
+		<result column="IS_FINISHED" property="isFinished"></result>
+		<result column="TRD_NO" property="trdNo"></result>
+		<result column="UPDATE_TIME" property="updateTime"></result>
+		<result column="AMT" property="amt"></result>
+	</resultMap>
+	
+	<!-- 获取受托户已完成日结日期 -->
+	<select id="getDayendDateFinished" parameterType="String">
+		 SELECT MAX(dayend_date)
+            FROM opm_mdt_dayend_inf t
+           WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+             AND t.is_finished = 'Y'
+	</select>
+	
+	<!-- 判断是否已日结 -->
+	<select id="isFinishDayend" parameterType="String" resultType="int">
+		 SELECT COUNT(1)
+          FROM opm_mdt_dayend_inf t
+         WHERE t.act_id =  #{actId,jdbcType=VARCHAR}
+           AND t.dayend_date >=  #{dayendDate,jdbcType=VARCHAR}
+           AND t.is_finished = 'Y'
+	</select>
+	
+	<!-- 判断日期区间是否已日结-->
+	<select id="isFinishDayendInterval" parameterType="String">
+		  SELECT COUNT(1)
+          FROM opm_mdt_dayend_inf t
+         WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+           AND t.dayend_date BETWEEN #{beginDate,jdbcType=VARCHAR} AND #{endDate,jdbcType=VARCHAR}
+           AND t.is_finished = 'Y'
+	</select>
+	
+	<!-- 判断是否已月结 -->
+	<select id="isFinishMonend" parameterType="String" resultType="int">
+            SELECT COUNT(1)
+          FROM opm_mdt_dayend_inf t
+         WHERE t.act_id =  #{actId,jdbcType=VARCHAR}
+           AND t.dayend_date = to_char(last_day(to_date(#{date,jdbcType=VARCHAR}, 'yyyy-mm-dd')), 'yyyy-mm-dd')
+           AND t.is_finished = 'Y'
+	</select>
+	<!-- 获取受托户明细余额-->
+	<select id="getAmtByDate" parameterType="String">
+		  SELECT MAX(amt)
+          FROM opm_mdt_dayend_inf t
+         WHERE t.dayend_date = #{date,jdbcType=VARCHAR}
+           AND t.act_id = #{actId,jdbcType=VARCHAR}
+	</select>
+	<!-- 获取最后一个已结账日期 -->
+	<select id="getLastDayendDate" parameterType="String">
+		 SELECT MAX(dayend_date)
+              FROM opm_mdt_dayend_inf t
+             WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+               AND t.is_finished = 'Y'
+	</select>
+	
+	<!-- 获取日结信息 -->
+	<select id="getMdtDayendInf" parameterType="String">
+		  SELECT act_id,dayend_date,is_finished,trd_no,update_time,amt
+              FROM opm_mdt_dayend_inf t
+             WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+               AND t.dayend_date = #{date,jdbcType=VARCHAR}
+               AND t.is_finished = 'Y'
+	</select>
+	
+	<!-- 取消日结更新相关信息 -->
+	<update id="updForDayendCancel" parameterType="String">
+		  MERGE INTO opm_mdt_dayend_inf a
+            USING (SELECT #{actId,jdbcType=VARCHAR} act_id,
+                          #{date,jdbcType=VARCHAR}    dayend_date
+                     FROM dual) b
+            ON (a.act_id = b.act_id AND a.dayend_date = b.dayend_date)
+            WHEN MATCHED THEN
+                UPDATE
+                   SET a.is_finished = 'N',
+                       a.trd_no      = #{trdNo,jdbcType=VARCHAR},
+                       a.amt         = ''
+	</update>
+</mapper>

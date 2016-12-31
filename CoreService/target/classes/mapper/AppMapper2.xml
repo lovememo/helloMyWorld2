@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.core.app.mapper.AppMapper2">
+
+	<!-- Map START -->
+	<resultMap id="appModel" type="com.opm.core.app.model.AppModel">
+		<result column="app_no" property="appNo"></result>
+		<result column="plan_id" property="planId"></result>
+		<result column="app_type" property="appType"></result>
+		<result column="app_state" property="appState"></result>
+		<result column="app_user" property="appUser"></result>
+		<result column="app_time" property="appTime"></result>
+		<result column="app_plan_time" property="appPlanTime"></result>
+		<result column="aud_user" property="audUser"></result>
+		<result column="aud_time" property="audTime"></result>
+		<result column="aud_plan_time" property="audPlanTime"></result>
+		<result column="bak_flag" property="bakFlag"></result>
+	</resultMap>
+	
+	<resultMap id="trdAppRel" type="com.opm.core.app.model.AppTrdRelModel">
+		<result column="app_no" property="appNo"></result>
+		<result column="trd_no" property="trdNo"></result>
+		<result column="trd_type" property="trdType"></result>
+		<result column="trd_order" property="trdOrder"></result>
+	</resultMap>
+	<!-- Map END -->
+	
+	<!-- SELECT START -->
+	
+	<select id="qryApp" resultMap="appModel" parameterType="com.opm.core.app.model.AppModel">
+		SELECT app_no,
+	       plan_id,
+	       app_type,
+	       app_state,
+	       app_user,
+	       <!-- 
+	       app_stru,
+	       aud_stru,
+	       -->
+	       to_char(app_time, 'yyyy-MM-dd') app_time,
+	       app_plan_time,
+	       aud_user,
+	       to_char(aud_time, 'yyyy-MM-dd') aud_time,
+	       aud_plan_time,
+	       bak_flag
+	  FROM opm_app 
+	  WHERE app_state <![CDATA[<>]]> 10
+	  	<if test="appNo != null and appNo != ''">
+	  		AND app_no = #{appNo}
+	  	</if>
+	    <if test="planId != null and planId != ''">
+	    	AND plan_id = #{planId}
+	    </if>
+	    <if test="appType != null and appType != ''">
+	    	AND app_type = #{appType}
+	    </if>
+	    <if test="appState != null and appState != ''">
+	    	AND app_state = #{appState}
+	    </if>
+	    <if test="appUser != null and appUser != ''">
+	    	AND app_user = #{appUser}
+	    </if>
+	    <!--  
+	    <if test="appStru != null and appStru != ''">
+	    	AND aud_stru = #{appStru}
+	    </if>
+	    <if test="audStru != null and audStru != ''">
+	    	AND aud_stru = #{audStru}
+	    </if>
+	    -->
+	    <if test="appTime != null and appTime != ''">
+	    	AND to_char(app_time, 'yyyy-MM-dd') = #{appTime}
+	    </if>
+	    <if test="appPlanTime != null and appPlanTime != ''">
+	    	AND app_plan_time = #{appPlanTime}
+	    </if>
+	    <if test="audUser != null and audUser != ''">
+	    	AND aud_user = #{audUser}
+	    </if>
+	    <if test="audTime != null and audTime != ''">
+	    	AND to_char(aud_time, 'yyyy-MM-dd') = #{audTime}
+	    </if>
+	    <if test="audPlanTime != null and audPlanTime != ''">
+	    	AND aud_plan_time = #{audPlanTime}
+	    </if>
+	    <if test="bakFlag != null and bakFlag != ''">
+	    	AND bak_flag = #{bakFlag}
+	    </if>
+	</select>
+	<select id="audApp" statementType="CALLABLE" parameterType="com.opm.core.app.model.AppModel">
+		{call pkg_opm_app.prod_app_aud(
+		#{appNo,mode=IN,jdbcType=VARCHAR},
+		#{appType,mode=IN,jdbcType=VARCHAR},
+		#{opFlag,mode=IN,jdbcType=VARCHAR},
+		#{planId,mode=IN,jdbcType=VARCHAR},
+		#{audPlanTime,mode=IN,jdbcType=VARCHAR},
+		#{audUser,mode=IN,jdbcType=VARCHAR},
+		#{audRole,mode=IN,jdbcType=VARCHAR},
+		#{audStru,mode=IN,jdbcType=VARCHAR},
+		#{audMemo,mode=IN,jdbcType=VARCHAR},
+		#{retFlag,mode=OUT,jdbcType=VARCHAR},
+		#{retMsg,mode=OUT,jdbcType=VARCHAR},
+		#{appNo,mode=OUT,jdbcType=VARCHAR},
+		#{appState,mode=OUT,jdbcType=VARCHAR}
+		)}
+	</select>
+	<select id="qryTrdMaxOrder" resultType="Long" parameterType="com.opm.core.app.model.AppTrdRelModel">
+		SELECT MAX(trd_order) FROM opm_trd_rel_app WHERE app_no = #{appNo,jdbcType = VARCHAR}
+	</select>
+	
+	<select id="qryTrdAppRef" resultMap="trdAppRel">
+		SELECT app_no, trd_no, trd_type, trd_order
+		  FROM opm_trd_rel_app
+		<where>
+			<if test="appNo != null and appNo !=''">
+		   AND app_no = #{appNo}
+		   	</if>
+		   	<if test="trdNo != null and trdNo != ''">
+		   AND trd_no = #{trdNo}
+		   	</if>
+		   	<if test="trdType != null and trdType != ''">
+		   AND trd_type = #{trdType}
+		   	</if>
+		   	<if test="trdOrder != null and trdOrder != ''">
+		   AND trd_order = #{trdOrder}
+		   	</if>
+		</where>
+	</select>
+	
+	<!-- SELECT END -->
+	
+	<!-- INSERT START -->
+	<insert id="addApp" parameterType="com.opm.core.app.model.AppModel" >
+		<selectKey keyProperty="appNo" resultType="java.lang.String" order="BEFORE">
+			SELECT seq_no.nextval FROM dual
+		</selectKey>
+	INSERT INTO opm_app
+	    (app_no,
+	     plan_id,
+	     app_type,
+	     app_state,
+	     app_user,
+	     <!--  
+	     app_stru,
+	     -->
+	     app_time,
+	     app_plan_time)
+	VALUES
+	    (#{appNo},
+	     #{planId},
+	     #{appType},
+	     #{appState},
+	     #{appUser},
+	     <!--  
+	     #{appStru},
+	     -->
+	     sysdate,
+	     #{appPlanTime})
+	</insert>
+	
+	<insert id="addRelAppTrd" parameterType="com.opm.core.app.model.AppTrdRelModel">
+		INSERT INTO opm_trd_rel_app
+		    (app_no, trd_no, trd_type, trd_order)
+		VALUES
+		    (#{appNo,jdbcType = VARCHAR}, #{trdNo,jdbcType = VARCHAR}, #{trdType,jdbcType = VARCHAR}, #{trdOrder,jdbcType = BIGINT})
+	</insert>
+	
+	<!-- INSERT END -->
+	
+	<!-- UPDATE START -->
+	<update id="updApp" parameterType="com.opm.core.app.model.AppModel">
+		UPDATE opm_app
+		<set>
+			<if test="audTime != null and audTime != ''">aud_time = sysdate,</if>
+			<if test="planId != null and planId !=''">plan_id = #{planId},</if>
+			<if test="appType != null and appType != ''">app_type = #{appType},</if>
+			<if test="appState != null and appState != ''">app_state = #{appState},</if>
+			<if test="appUser != null and appUser != ''">app_user = #{appUser},</if>
+			<!--  
+			<if test="appStru != null and appStru != ''">app_stru = #{appStru},</if>
+			<if test="audStru != null and audStru !='' ">aud_stru = #{audStru},</if>
+			-->
+			<if test="appTime != null and appTime != ''">app_time = sysdate,</if>
+			<if test="appPlanTime != null and appPlanTime != ''">app_plan_time = #{appPlanTime},</if>
+			<if test="audUser != null and audUser != ''">aud_user = #{audUser},</if>
+			<if test="audPlanTime != null and audPlanTime != ''">aud_plan_time = #{audPlanTime},</if>
+			<if test="bakFlag != null and bakFlag != ''">bak_flag = #{bakFlag},</if>
+		 </set>
+		 WHERE app_no = #{appNo}
+	</update>
+	<!-- UPDATE END -->
+	
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="GBK"?>
+<APPROOT type="BAMC_USABILITY_REPORT" ver="2.0" from=${appName} to="F-AMC" mode="asy">
+	<PUBLIC>
+		<APPSNAME>${appName}</APPSNAME>
+		<TYPE>02</TYPE>
+		<IP>${ipAddr}</IP>
+	</PUBLIC>
+	<PRIVATE>
+		<ROWSET>
+			<ROW>
+				<OCCUREDAPPSNAME>${occuredAppSName}</OCCUREDAPPSNAME>
+				<OCCUREDIP>${ipAddr}</OCCUREDIP>
+				<MODULECODE>${moduleCode}</MODULECODE>
+				<SUBMODULECODE></SUBMODULECODE>
+				<STATUS>0</STATUS>
+				<MSG></MSG>
+			</ROW>
+		</ROWSET>
+	</PRIVATE>
+</APPROOT>
+			

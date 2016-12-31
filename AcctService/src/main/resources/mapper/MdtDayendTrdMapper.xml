@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtDayendTrdMapper">
+<!-- 受托户关系表 -->
+	<resultMap id="mdtDayendTrd" type="com.opm.acct.mdt.model.MdtDayendTrdModel">
+	    <result column="TRD_NO" property="trdNo"></result>                      
+   		<result column="BEGIN_DATE" property="beginDate"></result>
+   		<result column="END_DATE" property="endDate"></result>
+   		<result column="DAYEND_FLAG" property="dayendFlag"></result>                        
+	</resultMap>
+	
+	<!-- 插入交易信息 -->
+	<insert id="insertMdtDayendTrd" parameterType="java.util.List">
+	 INSERT INTO opm_mdt_dayend_trd
+                (trd_no, beginDate, endDate, dayendFlag)
+			VALUES (#{item.trdNo,jdbcType=VARCHAR},#{item.beginDate,jdbcType=VARCHAR},
+				#{item.endDate,jdbcType=VARCHAR},#{item.dayendFlag,jdbcType=DOUBLE} )
+	</insert>
+    
+    <!-- 获取日结(取消日结)交易信息-->
+	<select id="getMdtDayendTrd" parameterType="String">
+		 SELECT trd_no, beginDate, endDate, dayendFlag
+              FROM opm_mdt_dayend_trd 
+             WHERE  trd_no = #{trdNo,jdbcType=VARCHAR}
+	</select>
+</mapper>

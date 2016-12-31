@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.core.investManager.mapper.NetValueAppMapper">
+	<!-- MAPPING START -->
+	<resultMap id="NetValueAppModel" type="com.opm.core.investManager.entity.NetValueAppEntity">
+		<result column="app_no" property="appNo"></result>
+		<result column="plan_id" property="planId"></result>
+		<result column="invest_id" property="investId"></result>
+		<result column="evaluate_date" property="evaluateDate"></result>
+		<result column="op_date" property="opDate"></result>
+		<result column="unit_value" property="unitValue"></result>
+		<result column="quotient" property="quotient"></result>
+		<result column="net_amt" property="netAmt"></result>
+		<result column="accept_date" property="acceptDate"></result>
+		<result column="invest_name" property="investName"></result>
+	</resultMap>
+	
+	<resultMap id="NetValueMAppEntity" type="com.opm.core.investManager.entity.NetValueMAppEntity">
+		<result column="app_no" property="appNo"></result>
+		<result column="plan_id" property="planId"></result>
+		<result column="evaluate_date" property="evaluateDate"></result>
+		<result column="op_date" property="opDate"></result>
+		<result column="accept_date" property="acceptDate"></result>
+		<result column="plan_name" property="planName"></result>
+		<result column="next_evaluate_date" property="nextEvaluateDate"></result>
+		<result column="common_plan_id" property="commonPlanId"></result>
+	</resultMap>
+	<!-- MAPPING END -->
+	
+
+	<!-- SELECT START --> 
+	<select id="qryMApp" resultMap="NetValueMAppEntity" parameterType="com.opm.core.investManager.entity.NetValueMAppEntity">
+		SELECT app_no,
+		       plan_id,
+		       evaluate_date,
+		       op_date,
+		       accept_date,
+		       plan_name,
+		       next_evaluate_date,
+		       common_plan_id
+		  FROM opm_net_value_m_app
+			<where>
+				<if test="appNo != null and appNo != ''">
+		  app_no = #{appNo}
+		  		</if>
+		 		<if test="planId != null and planId != ''">
+		   AND plan_id = #{planId}
+		   		</if>
+		   		<if test="evaluateDate != null and evaluateDate !=''">
+		   AND evaluate_date = #{evaluateDate}
+		   		</if>
+		   		<if test="opDate != null and opDate != ''">
+		   AND op_date = #{opDate}
+		   		</if>
+		   		<if test="acceptDate != null and acceptDate != ''">
+		   AND accept_date = #{acceptDate}
+		   		</if>
+		   		<if test="planName != null and planName != ''">
+		   AND plan_name = #{planName}
+		   		</if>
+		   		<if test="nextEvaluateDate != null and nextEvaluateDate != ''">
+		   AND next_evaluate_date = #{nextEvaluateDate}
+		   		</if>
+		   		<if test="commonPlanId != null and commonPlanId != ''">
+		   AND common_plan_id = #{commonPlanId}
+		   		</if>
+		    </where>
+	</select>
+	<select id="qryApp" resultMap="NetValueAppModel" parameterType="com.opm.core.investManager.entity.NetValueAppEntity">
+	SELECT app_no,
+	       plan_id,
+	       invest_id,
+	       evaluate_date,
+	       op_date,
+	       unit_value,
+	       quotient,
+	       net_amt,
+	       invest_name
+	  FROM opm_net_value_app
+	  <where>
+	  	<if test="appNo != null and appNo != ''">
+	   AND app_no = #{appNo}
+	    </if>
+	   	<if test="planId != null and planId != ''">
+	   AND plan_id = #{planId}
+	    </if>
+	   	<if test="investId != null and investId != ''">
+	   AND invest_id = #{investId}
+	    </if>
+	   	<if test="evaluateDate != null and evaluateDate != ''">
+	   AND evaluate_date = #{evaluateDate}
+	    </if>
+	   	<if test="opDate != null and opDate != ''">
+	   AND op_date = #{opDate}
+	    </if>
+	   	<if test="unitValue != null and unitValue != ''">
+	   AND unit_value = #{unitValue}
+	    </if>
+	   	<if test="quotient != null and quotient != ''">
+	   AND quotient = #{quotient}
+	    </if>
+	   	<if test="netAmt != null and netAmt != ''">
+	   AND net_amt = #{netAmt}
+	    </if>
+	   	<if test="acceptDate != null and acceptDate != ''">
+	   AND accept_date = #{acceptDate}
+	    </if>
+	   	<if test="investName != null and investName != ''">
+	   AND invest_name = #{investName}
+	    </if>
+	  </where>
+	</select>
+	<!-- SELECT END -->
+
+	<!-- INSERT START -->
+	<insert id="addApp" parameterType="com.opm.core.investManager.entity.NetValueAppEntity">
+	INSERT INTO opm_net_value_app
+	    (app_no,
+	     plan_id,
+	     invest_id,
+	     evaluate_date,
+	     op_date,
+	     unit_value,
+	     quotient,
+	     net_amt,
+	     invest_name)
+	VALUES
+	    (#{appNo},
+		#{planId},
+		#{investId},
+		#{evaluateDate},
+		#{opDate},
+		#{unitValue},
+		#{quotient},
+		#{netAmt},
+		#{investName}
+		)
+	</insert>
+
+	<insert id="addMApp" parameterType="com.opm.core.investManager.entity.NetValueMAppEntity">
+		INSERT INTO opm_net_value_m_app
+		    (app_no,
+		     plan_id,
+		     evaluate_date,
+		     op_date,
+		     accept_date,
+		     plan_name,
+		     next_evaluate_date,
+		     common_plan_id)
+		VALUES
+		    (#{appNo},
+		     #{planId},
+		     #{evaluateDate},
+		     #{opDate},
+		     #{acceptDate},
+		     #{planName},
+		     #{nextEvaluateDate},
+		     #{commonPlanId})
+	</insert>
+	<!-- INSERT END -->
+	
+	<!-- UPDATE START -->
+	<!--  
+	<update id="" parameterType="">
+	</update>
+	-->
+	<!-- UPDATE END -->
+	<delete id="delApp" parameterType="com.opm.core.investManager.entity.NetValueAppEntity">
+		DELETE FROM opm_net_value_app
+		WHERE app_no = #{appNo}
+		  AND invest_id = #{investId}
+		  AND plan_id = #{planId}
+		  AND evaluate_date = #{evaluateDate}
+	</delete>
+	
+	<delete id="delMApp" parameterType="com.opm.core.investManager.entity.NetValueAppEntity">
+		DELETE FROM opm_net_value_m_app
+		WHERE app_no = #{appNo}
+		  AND plan_id = #{planId}
+		  AND evaluate_date = #{evaluateDate}
+	</delete>
+</mapper>

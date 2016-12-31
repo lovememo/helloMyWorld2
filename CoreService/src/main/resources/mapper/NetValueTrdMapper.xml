@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.core.investManager.mapper.NetValueTrdMapper">
+	<!-- MAPPING START -->
+	<resultMap id="NetValueTrdModel" type="com.opm.core.investManager.entity.NetValueTrdEntity">
+		<result column="trd_no" property="trdNo"></result>
+		<result column="plan_id" property="planId"></result>
+		<result column="invest_id" property="investId"></result>
+		<result column="evaluate_date" property="evaluateDate"></result>
+		<result column="op_date" property="opDate"></result>
+		<result column="unit_value" property="unitValue"></result>
+		<result column="quotient" property="quotient"></result>
+		<result column="net_amt" property="netAmt"></result>
+	</resultMap>
+	
+
+	<!-- MAPPING END -->
+	
+
+	<!-- SELECT START -->
+	<select id="qryTrd" resultMap="NetValueTrdModel" parameterType="com.opm.core.investManager.entity.NetValueTrdEntity">
+		SELECT trd_no,
+		       plan_id,
+		       invest_id,
+		       evaluate_date,
+		       op_date,
+		       unit_value,
+		       quotient,
+		       net_amt
+		  FROM opm_net_value_trd
+		 WHERE trd_no = #{trdNo}
+		<if test="planId != null and planId != ''">
+		   AND plan_id = #{planId}
+		</if>
+		<if test="investId != null and investId != ''">
+		   AND invest_id = #{investId}
+		</if>
+		<if test="evaluateDate != null and evaluateDate != ''">
+		   AND evaluate_date = #{evaluateDate}
+		</if>
+		<if test="opDate != null and opDate != ''">
+		   AND op_date = #{opDate}
+		</if>
+		<if test="unitValue != null and unitValue != ''">
+		   AND unit_value = #{unitValue}
+		</if>
+		<if test="quotient != null and quotient != ''">
+		   AND quotient = #{quotient}
+		</if>
+		<if test="netAmt != null and netAmt != ''">
+		   AND net_amt = #{netAmt}
+		</if>
+	</select>
+	
+	<!-- SELECT END -->
+
+	<!-- INSERT START -->
+	<insert id="addTrd" parameterType="com.opm.core.investManager.entity.NetValueTrdEntity">
+		INSERT INTO opm_net_value_trd
+		    (trd_no,
+		     plan_id,
+		     invest_id,
+		     evaluate_date,
+		     op_date,
+		     unit_value,
+		     quotient,
+		     net_amt)
+		VALUES
+		    (#{trdNo},
+		     #{planId},
+		     #{investId},
+		     #{evaluateDate},
+		     #{opDate},
+		     #{unitValue},
+		     #{quotient},
+		     #{netAmt})
+	</insert>
+	
+	<!-- INSERT END -->
+	
+	<!-- UPDATE START -->
+	<!-- UPDATE END -->
+	
+	<!-- DELETE START -->
+	<delete id="delTrd" parameterType="com.opm.core.investManager.entity.NetValueTrdEntity">
+		DELETE opm_net_value_trd 
+		 WHERE trd_no = #{trdNo}
+		   AND plan_id = #{planId}
+		   AND invest_id = #{investId}
+		   AND evaluate_date = #{evaluateDate}
+	</delete>
+	<!-- DELETE END -->
+</mapper>

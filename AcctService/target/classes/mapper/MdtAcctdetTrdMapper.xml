@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.acct.mdt.mapper.MdtAcctdetTrdMapper">
+<!-- 受托户明细交易表 -->
+	<resultMap id="mdtAcctdetTrd" type="com.opm.acct.mdt.model.MdtAcctdetTrdModel">
+		<result column="SEQ_ID" property="seqId"></result>
+		<result column="LINE_NUM" property="lineNum"></result>            
+		<result column="ACT_ID" property="actId"></result>             
+		<result column="OP_DATE" property="opDate"></result>             
+		<result column="OP_TIME" property="opTime"></result>             
+		<result column="IN_TRADE_AMT" property="inTradeAmt"></result>        
+		<result column="OUT_TRADE_AMT" property="outTradeAmt"></result>       
+		<result column="AMT" property="amt"></result>                 
+		<result column="AMT_CAL" property="amtCal"></result>             
+		<result column="OPP_ACCT_NO" property="oppAcctNo"></result>        
+		<result column="OPP_ACCT_NAME" property="oppAcctName"></result>       
+		<result column="CONFIRM_STATE" property="confirmState"></result>       
+		<result column="DEAL_TYPE" property="dealType"></result>           
+		<result column="SUMMARY1" property="summary1"></result>            
+		<result column="SUMMARY2" property="summary2"></result>            
+		<result column="MEMO" property="memo"></result>                
+		<result column="CHECK_FLAG" property="checkFlag"></result>          
+		<result column="CHECK_MEMO" property="checkMemo"></result>   
+		<result column="TRD_NO" property="trdNo"></result>        
+	</resultMap>
+	
+	<!-- 受托户明细导入申请批量文件校验-->
+	<update id="mdtDetImpCheck" parameterType="String">
+		 UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '每条明细的出账金额和入账金额只有一项不为空'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND ((t.in_trade_amt IS NOT NULL AND t.out_trade_amt IS NOT NULL) OR
+             (t.in_trade_amt IS NULL AND t.out_trade_amt IS NULL));
+
+      UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '出账金额或入账金额不能为0'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND ((t.in_trade_amt IS NOT NULL AND t.in_trade_amt = 0) OR (t.out_trade_amt IS NOT NULL AND t.out_trade_amt = 0));
+
+      UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '对方户名不能为-1'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND t.opp_acct_name IS NOT NULL
+         AND t.opp_acct_name = '-1';
+
+      UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '对方账号不能包含汉字'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND t.opp_acct_name IS NOT NULL
+         AND length(t.opp_acct_no) != lengthb(t.opp_acct_no);
+         
+        <!--?????????????? UPDATE opm_mdt_acctdet_trd t
+         SET t.op_date = nvl(pkg_util.date_format(t.op_date, 'yyyy-mm-dd', 'yyyy-mm-dd'),
+                             pkg_util.date_format(t.op_date, 'yyyymmdd', 'yyyy-mm-dd'))
+       WHERE app_no = i_app_no
+         AND t.check_flag = 0; -->
+
+      <!--交易日期和交易时间系统可以识别  -->
+
+      UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '交易日期必须为yyyy-mm-dd格式或yyyymmdd格式'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND t.op_date IS NULL;
+
+      UPDATE opm_mdt_acctdet_trd t
+         SET t.check_flag = 1,
+             t.check_memo = '日期不能大于当前系统时间'
+       WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+         AND t.check_flag = 0
+         AND op_date > to_char(SYSDATE, 'YYYY-MM-DD');
+         <!-- 非历史明细校验 
+          UPDATE opm_mdt_acctdet_trd t
+             SET t.check_flag = 1,
+                 t.check_memo = '确认状态必须为空。'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t.check_flag = 0
+             AND t.confirm_state IS NOT NULL;
+      
+      
+          UPDATE opm_mdt_acctdet_trd t
+             SET t.check_flag = 1,
+                 t.check_memo = '备注必须为空。'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t.check_flag = 0
+             AND t.memo IS NOT NULL;-->
+             
+              UPDATE opm_mdt_acctdet_trd t
+             SET t.check_flag = 1,
+                 t.check_memo = '交易类型只能为资产提取、结息或空'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t.check_flag = 0
+             AND t.deal_type IS NOT NULL
+             AND t.deal_type NOT IN (9, 10);
+      
+          <!--非历史明细导入  -->
+          <!--每日最后一条明细有余额 (余额为空，不存在一条后面的明细与该条明细的op_date相同)-->
+      
+          UPDATE opm_mdt_acctdet_trd t
+             SET t.check_flag = 1,
+                 t.check_memo = '每日最后一条明细必须有余额'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t.check_flag = 0
+             AND t.amt IS NULL
+             AND NOT EXISTS (SELECT 1
+                    FROM opm_mdt_acctdet_trd t2
+                   WHERE t2.trd_no = t.trd_no
+                     AND t2.line_num > t.line_num
+                     AND t2.op_date = t.op_date);
+      
+          <!--导入明细不能跨月-->
+      
+          UPDATE opm_mdt_acctdet_trd t
+             SET t.check_flag = 1,
+                 t.check_memo = '导入明细不能跨月'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t.check_flag = 0
+             AND EXISTS
+           (SELECT 1
+                    FROM opm_mdt_acctdet_trd t2
+                   WHERE t2.trd_no = #{trdNo,jdbcType=VARCHAR}
+                     AND last_day(to_date(t2.op_date, 'YYYY-MM-DD')) - last_day(to_date(t.op_date, 'YYYY-MM-DD')) != 0);
+      
+          <!--本次导入的首条明细的交易日期和交易时间（若有）不能早于上次导入的最后一条明细的交易日期和交易时间（若有），-->
+          <!--  UPDATE opm_mdt_acctdet_trd t1
+             SET t1.check_flag = 1,
+                 t1.check_memo = '本次导入的首条明细的交易日期和交易时间（若有）不能早于上次导入的最后一条明细的交易日期和交易时间（若有）'
+           WHERE app_no = #{appNo,jdbcType=VARCHAR}
+             AND t1.check_flag = 0
+             AND t1.line_num = v_line_num
+             AND EXISTS (SELECT 1
+                    FROM (SELECT b.*
+                            FROM (SELECT a.*
+                                    FROM pim_mdt_acctdet_inf a
+                                   WHERE a.plan_id = v_app.plan_id
+                                     AND a.valid_flag = 0
+                                   ORDER BY op_date  DESC,
+                                            a.seq_no DESC) b
+                           WHERE rownum = 1) t2
+                   WHERE (t1.op_date &lt; t2.op_date OR (t1.op_date = t2.op_date AND t1.op_time IS NOT NULL AND
+                         t2.op_time IS NOT NULL AND t1.op_time &lt; t2.op_time)));-->
+                         
+                         
+             UPDATE opm_mdt_acctdet_trd t1
+             SET t1.check_flag = 1,
+                 t1.check_memo = '本次导入的首条明细的交易日期和交易时间（若有）不能早于上次导入的最后一条明细的交易日期和交易时间（若有）'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t1.check_flag = 0
+             AND t1.line_num = (SELECT MIN(a.line_num) FROM opm_mdt_acctdet_trd a)
+             AND EXISTS (SELECT 1
+                    FROM (SELECT b.*
+                            FROM (SELECT a.*
+                                    FROM pim_mdt_acctdet_inf a,v_oam_app c
+                                   WHERE a.trd_no=c.trd_no and a.trd_no= #{trdNo,jdbcType=VARCHAR} and a.act_id = c.act_id
+                                     AND a.valid_flag = 0
+                                   ORDER BY op_date  DESC,
+                                            a.seq_id DESC) b
+                           WHERE rownum = 1) t2
+                   WHERE (t1.op_date &lt;  t2.op_date OR (t1.op_date = t2.op_date AND t1.op_time IS NOT NULL AND
+                         t2.op_time IS NOT NULL AND t1.op_time &lt; t2.op_time)));
+      
+          <!--交易日期也不能早于计划信息中的受托户核算起始日期；-->
+          UPDATE opm_mdt_acctdet_trd t1
+             SET t1.check_flag = 1,
+                 t1.check_memo = '交易日期不能早于计划信息中的受托户核算起始日期'
+           WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+             AND t1.check_flag = 0
+             AND t1.op_date &lt; (SELECT a.act_date
+      FROM opm_mdt_act_inf a 
+     WHERE a.act_id=#{actId,jdbcType=VARCHAR});
+             
+	</update>
+	
+	<!-- 根据trdNo,checkFlag查询受托户明细交易表记录 -->
+	<select id="qryMdtAcctdetTrdByTrdNoAndCheckFlag" parameterType="String">
+		 SELECT trd_no,
+                          line_num,
+                          seq_id,
+                          act_id,
+                          op_date,
+                          op_time
+                          <!--,
+                          ROWID id  -->
+                     FROM opm_mdt_acctdet_trd t1
+                    WHERE t1.trd_no = #{trdNo,jdbcType=VARCHAR}
+                      AND t1.check_flag = 0
+                    ORDER BY t1.line_num
+	</select>
+	
+	<!-- 更新受托户明细交易表每条记录校验结果-->
+	<update id="updCheckResultPerRecord" parameterType="java.util.List">
+		<foreach collection="list" item="item" open="begin" separator=";"
+			close=";end;">
+			update opm_mdt_acctdet_trd
+			<set>
+				check_flag=1,
+				check_memo =#{item.checkMemo,jdbcType=VARCHAR}
+			</set>
+			WHERE trd_no = #{item.trdNo,jdbcType=VARCHAR} and seq_id = #{item.seqId,jdbcType=VARCHAR}
+		</foreach>
+	</update>
+  
+  <!-- 根据trdNo条件更新受托户明细交易表校验结果-->
+	<update id="updCheckResultByTrdNo" parameterType="String">
+		  UPDATE opm_mdt_acctdet_trd t
+                     SET t.check_flag = 1,
+                         t.check_memo = #{checkMemo,jdbcType=VARCHAR}
+                   WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+                     AND t.check_flag = 0;
+	</update>
+	
+	<!-- 受托户明细导入后 最后一条明细的交易日期-->
+	<select id="getMaxOpDateByTrdNo" parameterType="String">
+		 SELECT MAX(t.op_date) as op_date FROM opm_mdt_acctdet_trd t WHERE t.trd_no = #{trdNo,jdbcType=VARCHAR}
+	</select>
+	
+	
+	<!-- 获取受托户计息区间中的结束日期-->
+	<select id="getMdtDailyIntDrawEndDate" parameterType="String">
+		 SELECT to_char(to_date(MAX(op_date), 'YYYY-MM-DD') - 1, 'YYYY-MM-DD')
+              as op_date
+              FROM opm_mdt_acctdet_trd t1
+             WHERE  trd_no = #{trdNo,jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 获取本次导入最小操作日期-->
+	<select id="getMinOpDate" parameterType="String">
+		 SELECT MIN(op_date) as op_date
+                  FROM opm_mdt_acctdet_trd t1
+                 WHERE NOT EXISTS (SELECT 1
+                          FROM opm_mdt_acctdet_trd t2
+                         WHERE t2.trd_no = t1.trd_no
+                           AND t2.op_date &lt; t1.op_date)
+                   AND trd_no = #{trdNo,jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 受托户明细导入金额校验中更新金额-->
+	<update id="updateAmtImpCheck" parameterType="String">
+		   MERGE INTO opm_mdt_acctdet_trd t1
+        USING (
+               
+               SELECT t.trd_no,
+                       t.line_num,
+                       (SELECT nvl(MAX(amt), 0)
+            as v_amt
+            FROM opm_mdt_acctdet_inf t
+           WHERE seq_id = (SELECT MAX(seq_id)
+                             FROM (SELECT seq_id,
+                                          rownum rw
+                                     FROM (SELECT seq_id
+                                             FROM opm_mdt_acctdet_inf t
+                                            WHERE t.act_id = #{actId,jdbcType=VARCHAR}
+                                              AND t.valid_flag = 0
+                                            ORDER BY op_date DESC,
+                                                     seq_id  DESC))
+                           
+                            WHERE rw = 1)) + SUM(nvl(in_trade_amt, 0) - nvl(out_trade_amt, 0)) over(PARTITION BY trd_no ORDER BY trd_no, t.line_num rows BETWEEN unbounded preceding AND CURRENT ROW) amt_cal,
+                       ROWID id
+                 FROM opm_mdt_acctdet_trd t
+                WHERE trd_no =#{trdNo,jdbcType=VARCHAR}
+                GROUP BY t.trd_no,
+                          t.line_num,
+                          in_trade_amt,
+                          out_trade_amt,
+                          ROWID) t2
+        ON (t2.trd_no = t1.trd_no AND t2.line_num = t1.line_num AND t1.rowid = t2.id)
+        WHEN MATCHED THEN
+            UPDATE SET t1.amt_cal = t2.amt_cal WHERE t1.trd_no = #{trdNo,jdbcType=VARCHAR};
+	</update>
+	
+	<!-- 受托户明细导入前金额校验 -->
+	<update id="checkAmtBefImp" parameterType="String">
+		 UPDATE opm_mdt_acctdet_trd t
+           SET t.check_flag = 1,
+               t.check_memo = '导入余额不正确'
+         WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+           AND t.check_flag = 0
+           AND t.amt IS NOT NULL
+           AND t.amt != t.amt_cal;
+        
+        UPDATE opm_mdt_acctdet_trd t
+           SET t.check_flag = 1,
+               t.check_memo = '余额不能为负'
+         WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+           AND t.check_flag = 0
+           AND t.amt_cal &lt; 0;            
+
+	</update>
+	
+	<!-- 根据校验标志查询记录数 -->
+	<select id="getCountByCheckFlag" parameterType="String">
+		SELECT COUNT(1)  FROM opm_mdt_acctdet_trd t WHERE t.check_flag != #{checkFlag,jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 根据trdNo查询受托户导入明细信息--> 
+	<select id="qryMdtAcctdetTrdListByTrdNo" parameterType="String">
+		SELECT 
+                  line_num,
+                  act_id,
+                  op_date,
+                  op_time,
+                  in_trade_amt,
+                  out_trade_amt,
+                  amt,
+                  opp_acct_no,
+                  opp_acct_name,
+                  confirm_state,
+                  deal_type,
+                  summary1,
+                  summary2,
+                  memo,
+                  trd_no
+             FROM opm_mdt_acctdet_trd
+            WHERE trd_no = #{trdNo,jdbcType=VARCHAR}
+	</select>
+	<!-- 插入交易信息 -->
+	<insert id="insertMdtAcctdetTrd" parameterType="java.util.List">
+	 INSERT INTO opm_mdt_acctdet_trd
+                (trd_no, seq_id, act_id, op_date, deal_type, memo, line_num)
+			VALUES (#{item.trdNo,jdbcType=VARCHAR},#{item.seqId,jdbcType=VARCHAR},
+				#{item.actId,jdbcType=VARCHAR},#{item.opDate,jdbcType=DOUBLE},
+				#{dealType,jdbcType=VARCHAR},#{item.memo,jdbcType=VARCHAR},'1' )
+	</insert>
+	
+	<!-- 受托户修改 更新部分字段-->
+	<update id="updMdtAcctdetTrdForMod" parameterType="String">
+		 UPDATE opm_mdt_acctdet_trd t
+           SET (op_time, in_trade_amt, out_trade_amt, amt, opp_acct_no, opp_acct_name, summary1, summary2) =
+               (SELECT op_time,
+                       decode(in_trade_amt, 0, NULL, in_trade_amt),
+                       decode(out_trade_amt, 0, NULL, out_trade_amt),
+                       amt,
+                       opp_acct_no,
+                       opp_acct_name,
+                       summary1,
+                       summary2
+
+                  FROM opm_mdt_acctdet_inf t2
+                 WHERE t2.seq_id = #{seqId,jdbcType=VARCHAR})
+         WHERE t.trd_no = #{trdNo,jdbcType=VARCHAR};     
+
+	</update>
+	<!-- 根据流水号查询交易信息--> 
+	<select id="getMdtAcctdetTrdBySeqId" parameterType="String">
+		SELECT 
+                  line_num,
+                  act_id,
+                  op_date,
+                  op_time,
+                  in_trade_amt,
+                  out_trade_amt,
+                  amt,
+                  opp_acct_no,
+                  opp_acct_name,
+                  confirm_state,
+                  deal_type,
+                  summary1,
+                  summary2,
+                  memo,
+                  trd_no
+             FROM opm_mdt_acctdet_trd
+            WHERE seq_id = #{seqId,jdbcType=VARCHAR}
+	</select>
+</mapper>

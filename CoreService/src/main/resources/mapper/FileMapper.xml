@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 指定工作空间，要与接口名相同，源代码没有去看，猜测应该是通过"这里的namespace.下边方法的id"来定位方法的 -->
+<mapper namespace="com.opm.core.common.mapper.FileMapper">
+
+	<!-- Map START -->
+	<resultMap id="fileRelApp" type="com.opm.core.common.model.FileRelApp">
+		<result column="serial_no" property="serial_no"></result>
+		<result column="app_no" property="app_no"></result>
+	</resultMap>
+
+	<select id="qryFileRel" resultMap="fileRelApp">
+		select serial_no,app_no
+		from opm_file_rel_app
+		<where>
+			<if test="serial_no != null and serial_no != ''">
+				AND serial_no = #{serial_no}
+			</if>
+			<if test="app_no != null and app_no != ''">
+				AND app_no = #{app_no}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertFileRelApp" parameterType="com.opm.core.common.model.FileRelApp">
+		insert into
+		opm_file_rel_app(serial_no,app_no)
+		values(#{serial_no},#{app_no})
+	</insert>
+
+</mapper>
