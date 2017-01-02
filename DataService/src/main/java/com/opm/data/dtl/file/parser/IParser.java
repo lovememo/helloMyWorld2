@@ -16,6 +16,12 @@ public interface IParser {
      * @throws Exception
      */
     public int[] parse(InputStream is, ICleaningAction action) throws Exception;
+
+    /**
+     * 设置解析是所用字符集
+     * @param charset
+     */
+    public void setCharset(String charset);
 //    public int[] prototypeParse(InputStream is, ICleaningAction action) throws Exception;
     //public List<String[]> parse(InputStream is) throws Exception;
 }

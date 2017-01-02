@@ -50,6 +50,7 @@ public abstract class AbstractParser implements IParser {
         return charset;
     }
 
+    @Override
     public void setCharset(String charset) {
         this.charset = charset;
     }

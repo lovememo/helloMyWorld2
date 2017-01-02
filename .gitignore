@@ -42,3 +42,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 *.class
+.idea/libraries/*.*
+.idea/*/*.*
+.idea
+pom.xml
+pom.xml
+*.class

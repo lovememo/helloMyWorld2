@@ -66,10 +66,9 @@ public class DataCleaningWorker {
         this.deleteDtlDataInfo(serialNo);//先删除原有的serialNo对应的数据
         ParserFactory pf = new ParserFactory();
         String fileExt = FileUtil.getFileExtension(fileName);
-        int fileFormat = ParserFactory.SEPARATOR_FILE;
-        IParser parser = pf.getParser(fileExt, 1500, fileFormat);
+        IParser parser = pf.getParser(fileExt, 1500, dtlItem);
         if(null == parser) {
-            throw new Exception("解析器创建失败！fileExt:" + fileExt + ", fileFormat:" + fileFormat);
+            throw new Exception("解析器创建失败！fileExt:" + fileExt + ", fileFormat:" + dtlItem);
         }
         ICleaningAction action = new DefaultCleaningAction(serialNo, this.dtlDataDao);
         return parser.parse(is, action);

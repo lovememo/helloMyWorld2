@@ -155,6 +155,7 @@ public class DtlItem {
 
     public void setParseHeaderRuleList(List<DtlRule> parseHeaderRuleList) {
         this.parseHeaderRuleList = parseHeaderRuleList;
+        this.parseHeaderRuleList.sort(new DtlRuleComparator());//°´×Ö¶ÎË³ÐòÅÅÐò
     }
 
     public List<DtlRule> getCheckRuleList() {
@@ -163,5 +164,26 @@ public class DtlItem {
 
     public void setCheckRuleList(List<DtlRule> checkRuleList) {
         this.checkRuleList = checkRuleList;
+    }
+
+    @Override
+    public String toString() {
+        return "DtlItem{" +
+                "dtlItemId='" + dtlItemId + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", status='" + status + '\'' +
+                ", version='" + version + '\'' +
+                ", type='" + type + '\'' +
+                ", mode='" + mode + '\'' +
+                ", direction='" + direction + '\'' +
+                ", remark='" + remark + '\'' +
+                ", medium='" + medium + '\'' +
+                ", charset='" + charset + '\'' +
+                ", parseHeaderRuleList=" + parseHeaderRuleList +
+                ", parseBodyRuleList=" + parseBodyRuleList +
+                ", checkRuleList=" + checkRuleList +
+                ", headerRuleId='" + headerRuleId + '\'' +
+                ", bodyRuleId='" + bodyRuleId + '\'' +
+                '}';
     }
 }

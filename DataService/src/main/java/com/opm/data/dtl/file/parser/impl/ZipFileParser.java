@@ -8,6 +8,7 @@ import com.opm.data.common.FileUtil;
 import com.opm.data.dtl.file.parser.IParser;
 import com.opm.data.dtl.file.parser.action.ICleaningAction;
 import com.opm.data.dtl.file.parser.factory.ParserFactory;
+import com.opm.data.dtl.model.DtlItem;
 
 import java.io.InputStream;
 
@@ -15,19 +16,19 @@ import java.io.InputStream;
  * Created by kfzx-jinjf on 2016/12/26.
  */
 public class ZipFileParser extends AbstractParser {
-    private int fileFormat = -1;
-
-    public int getFileFormat() {
-        return fileFormat;
+    public DtlItem getDtlItem() {
+        return dtlItem;
     }
 
-    public void setFileFormat(int fileFormat) {
-        this.fileFormat = fileFormat;
+    public void setDtlItem(DtlItem dtlItem) {
+        this.dtlItem = dtlItem;
     }
 
-    public ZipFileParser(int batchSize, int fileFormat) {
+    private DtlItem dtlItem;
+
+    public ZipFileParser(int batchSize, DtlItem dtlItem) {
         this.batchSize = batchSize;
-        this.fileFormat = fileFormat;
+        this.dtlItem = dtlItem;
     }
 
     @Override
@@ -42,9 +43,9 @@ public class ZipFileParser extends AbstractParser {
             }
             String fileExt = FileUtil.getFileExtension(ze.getName());
             ParserFactory pf = new ParserFactory();
-            IParser parser = pf.getParser(fileExt, this.batchSize, fileFormat);
+            IParser parser = pf.getParser(fileExt, this.batchSize, dtlItem);
             if(null == parser) {
-                throw new Exception("解析器创建失败！fileExt:" + fileExt + ", fileFormat:" + fileFormat);
+                throw new Exception("解析器创建失败！fileExt:" + fileExt + ", fileFormat:" + dtlItem);
             }
             return parser.parse(zis, action);
         }
@@ -55,9 +56,9 @@ public class ZipFileParser extends AbstractParser {
         return new int[]{0, 0};
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         ZipFileParser zfp = new ZipFileParser(123,1);
         System.out.println(FileUtil.getFileExtension("123txt"));
         System.out.println(FileUtil.getFileExtension("123.txt.zip"));
-    }
+    }*/
 }
