@@ -3,10 +3,7 @@ package com.opm.data.dtl.dao.impl;
 import com.opm.common.enumdict.DtlStatus;
 import com.opm.data.dtl.dao.IDtlDataDao;
 import com.opm.data.dtl.mapper.DtlMapper;
-import com.opm.data.dtl.model.DtlControl;
-import com.opm.data.dtl.model.DtlData;
-import com.opm.data.dtl.model.DtlFile;
-import com.opm.data.dtl.model.DtlItem;
+import com.opm.data.dtl.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -171,5 +168,14 @@ public class DtlDataDao implements IDtlDataDao {
     @Override
     public List<DtlItem> queryDtlItem(DtlControl dtlControl) {
         return this.dtlMapper.queryDtlItem(dtlControl);
+    }
+
+    /**
+     * 查询规则集合
+     * @param ruleId
+     * @return
+     */
+    public List<DtlRule> queryDtlRule(String ruleId) {
+        return this.dtlMapper.queryDtlRule(ruleId);
     }
 }

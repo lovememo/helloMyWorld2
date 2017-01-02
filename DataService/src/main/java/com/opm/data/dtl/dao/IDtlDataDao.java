@@ -1,9 +1,6 @@
 package com.opm.data.dtl.dao;
 
-import com.opm.data.dtl.model.DtlControl;
-import com.opm.data.dtl.model.DtlData;
-import com.opm.data.dtl.model.DtlFile;
-import com.opm.data.dtl.model.DtlItem;
+import com.opm.data.dtl.model.*;
 
 import java.util.List;
 
@@ -88,4 +85,11 @@ public interface IDtlDataDao {
      * @return
      */
     public List<DtlItem> queryDtlItem(DtlControl dtlControl);
+
+    /**
+     * 查询规则集合
+     * @param ruleId
+     * @return
+     */
+    public List<DtlRule> queryDtlRule(String ruleId);
 }

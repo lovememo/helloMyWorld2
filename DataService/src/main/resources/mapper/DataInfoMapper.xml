@@ -62,38 +62,58 @@
         <result column="FILE_NAME" property="fileName"></result>
         <result column="FILE_SIZE" property="fileSize"></result>
     </resultMap>
-    <!-- MAPPING END -->
 
-    <!-- MAPPING START -->
     <resultMap id="dtlItemModel" type="com.opm.data.dtl.model.DtlItem">
         <result column="DTL_ITEM_ID" property="dtlItemId"></result>
         <result column="FILE_NAME" property="fileName"></result>
         <result column="STATUS" property="status"></result>
+        <result column="DTL_TYPE" property="type"></result>
+        <result column="DTL_MODE" property="mode"></result>
         <result column="VERSION" property="version"></result>
         <result column="DIRECTION" property="direction"></result>
         <result column="REMARK" property="remark"></result>
         <result column="CHARSET" property="charset"></result>
-        <result column="PARTITION" property="partition"></result>
         <result column="HEADER_RULE_ID" property="headerRuleId"></result>
         <result column="BODY_RULE_ID" property="bodyRuleId"></result>
+        <result column="MEDIUM" property="medium"></result>
+    </resultMap>
+    <resultMap id="dtlRuleModel" type="com.opm.data.dtl.model.DtlRule">
+        <result column="RULE_ID" property="ruleId"></result>
+        <result column="FIELD_SEQ" property="fieldSeq"></result>
+        <result column="RULE_TYPE" property="ruleType"></result>
+        <result column="RULE" property="ruleExpression"></result>
+        <result column="STATUS" property="status"></result>
     </resultMap>
     <!-- MAPPING END -->
     <!-- SELECT START -->
+    <select id="queryDtlRule" resultMap="dtlRuleModel" parameterType="String">
+        SELECT RULE_ID,
+        FIELD_SEQ,
+        RULE_TYPE,
+        RULE,
+        STATUS
+        FROM OPM_DTL_RULE_INF T
+        WHERE T.RULE_ID = #{ruleId}
+        AND T.STATUS = 'Y'
+        ORDER BY T.FIELD_SEQ
+    </select>
     <select id="queryDtlItem" resultMap="dtlItemModel" parameterType="com.opm.data.dtl.model.DtlControl" >
         SELECT A.ID      AS DTL_ITEM_ID,
         A.NAME           AS FILE_NAME,
+        A.DTL_TYPE       AS DTL_TYPE,
+        A.DTL_MODE       AS DTL_MODE,
         A.STATUS         AS STATUS,
         A.VERSION        AS VERSION,
         A.DIRECTION      AS DIRECTION,
         A.REMARK         AS REMARK,
         B.CHARSET        AS CHARSET,
-        B.PARTITION      AS PARTITION,
         B.HEADER_RULE_ID AS HEADER_RULE_ID,
-        B.BODY_RULE_ID   AS BODY_RULE_ID
+        B.BODY_RULE_ID   AS BODY_RULE_ID,
+        B.MEDIUM AS MEDIUM
         FROM OPM_DTL_ITEM_INF A
-        INNER JOIN OPM_DTL_FILE_INF B
+        LEFT JOIN OPM_DTL_FILE_INF B
         ON A.ID = B.DTL_ITEM_ID
-        INNER JOIN OPM_DTL_CTRL_INF C
+        LEFT JOIN OPM_DTL_CTRL_INF C
         ON A.ID = C.DTL_ITEM_ID
         WHERE NVL(#{serialNo}, C.SERIAL_NO) = C.SERIAL_NO
         AND NVL(#{dtlItemId}, A.ID) = A.ID

@@ -197,6 +197,11 @@ public class DataCleaningWorker {
         return dtlFile;
     }
 
+    /**
+     * 获取数据清理定义信息
+     * @param serialNo
+     * @return
+     */
     public DtlItem getDtlItem(String serialNo) {
         DtlControl dtlControl = new DtlControl();
         dtlControl.setSerialNo(serialNo);
@@ -207,8 +212,14 @@ public class DataCleaningWorker {
         } else {
             return retDtlItem;
         }
+        //加载定长文件解析规则
+        if(retDtlItem.needParseFixedFile()) {
+            retDtlItem.setParseHeaderRuleList(this.dtlDataDao.queryDtlRule(retDtlItem.getHeaderRuleId()));
+            retDtlItem.setParseBodyRuleList(this.dtlDataDao.queryDtlRule(retDtlItem.getBodyRuleId()));
+        }
         return retDtlItem;
     }
+
     /**
      * 数据清理
      *

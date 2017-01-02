@@ -1,5 +1,9 @@
 package com.opm.data.dtl.model;
 
+import com.opm.common.enumdict.DtlMedium;
+import com.opm.common.enumdict.DtlMode;
+import com.opm.common.enumdict.DtlType;
+
 import java.util.List;
 
 /**
@@ -10,18 +14,60 @@ public class DtlItem {
     private String fileName;
     private String status;
     private String version;
+    private String type;//1-接口 2-文件处理
+
+    private String mode;//1-文件 2-接口
 
     private String direction;//1-内 2-外
-
     private String remark;//备注
+
     private String medium;//介质
     private String charset;//编码
-    private String partition;//0-仅仅包含文件体 1-包含首行控制信息及文件体
-    private List<DtlRule> parseRuleList;//解析规则
+    private List<DtlRule> parseHeaderRuleList;//解析头规则
+    private List<DtlRule> parseBodyRuleList;//解析体规则
     private List<DtlRule> checkRuleList;//清理规则
-
     private String headerRuleId;
+
     private String bodyRuleId;
+
+    /**
+     * 是否需要文件解析
+     * @return
+     */
+    public boolean needParseFixedFile() {
+        //接口且是文件传输
+        boolean infFlag = DtlType.valueOfCode(this.type) == DtlType.INTERFACE && DtlMode.valueOfCode(this.mode) == DtlMode.FILE;
+        //文件处理
+        boolean fileFlag = DtlType.valueOfCode(this.type) == DtlType.FILE;
+        //需要文件处理
+        boolean isFile = fileFlag || infFlag;
+        boolean isFixedSize = DtlMedium.valueOfCode(this.medium) == DtlMedium.TXT_FIXED_SIZE;
+        return isFile && isFixedSize;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public List<DtlRule> getParseBodyRuleList() {
+        return parseBodyRuleList;
+    }
+
+    public void setParseBodyRuleList(List<DtlRule> parseBodyRuleList) {
+        this.parseBodyRuleList = parseBodyRuleList;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getHeaderRuleId() {
         return headerRuleId;
@@ -58,6 +104,7 @@ public class DtlItem {
     public String getStatus() {
         return status;
     }
+
     public String getVersion() {
         return version;
     }
@@ -102,20 +149,12 @@ public class DtlItem {
         this.charset = charset;
     }
 
-    public String getPartition() {
-        return partition;
+    public List<DtlRule> getParseHeaderRuleList() {
+        return parseHeaderRuleList;
     }
 
-    public void setPartition(String partition) {
-        this.partition = partition;
-    }
-
-    public List<DtlRule> getParseRuleList() {
-        return parseRuleList;
-    }
-
-    public void setParseRuleList(List<DtlRule> parseRuleList) {
-        this.parseRuleList = parseRuleList;
+    public void setParseHeaderRuleList(List<DtlRule> parseHeaderRuleList) {
+        this.parseHeaderRuleList = parseHeaderRuleList;
     }
 
     public List<DtlRule> getCheckRuleList() {

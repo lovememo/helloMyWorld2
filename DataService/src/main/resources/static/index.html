@@ -17,8 +17,9 @@
 </head>
 <body>
 <form name="fileForm1" id="fileForm" method="POST" enctype="multipart/form-data" action="/file/upload">
+    <input type="hidden" name="dtlItemId" value="1001"/>
     File to upload: <input type="file" id="dtlFile1" name="dtlFile"><input type="hidden" name="dtlFileName" id="dtlFileName1"/>
-    <input type="button" onclick="aasubmit('1');" value="Upload"> Press here to upload the file to data service directly!
+    <input type="button" onclick="aasubmit('1');" value="Upload">1  Press here to upload the file to data service directly!
 </form>
 
 <form name="fileForm2" id="fileForm2" method="POST" enctype="multipart/form-data" action="http://localhost:8080/zuul/data/file/upload">

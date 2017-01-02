@@ -1,9 +1,6 @@
 package com.opm.data.dtl.mapper;
 
-import com.opm.data.dtl.model.DtlData;
-import com.opm.data.dtl.model.DtlControl;
-import com.opm.data.dtl.model.DtlFile;
-import com.opm.data.dtl.model.DtlItem;
+import com.opm.data.dtl.model.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -79,4 +76,11 @@ public interface DtlMapper {
      * @return
      */
     public List<DtlItem> queryDtlItem(DtlControl dtlControl);
+
+    /**
+     * 查询规则集合
+     * @param ruleId
+     * @return
+     */
+    public List<DtlRule> queryDtlRule(@Param("ruleId") String ruleId);
 }

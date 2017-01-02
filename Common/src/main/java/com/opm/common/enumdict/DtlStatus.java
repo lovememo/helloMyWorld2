@@ -22,7 +22,8 @@ public enum DtlStatus {
         return key;
     }
 
-    public static DtlStatus valueOfCode(String code) {
+    public static DtlStatus valueOfCode(String codeStr) {
+        String code = null == codeStr ? "" : codeStr;
         DtlStatus ret = null;
         switch (code) {
             case "1":

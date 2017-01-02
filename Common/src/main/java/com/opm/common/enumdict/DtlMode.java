@@ -1,14 +1,15 @@
 package com.opm.common.enumdict;
 
 /**
- * Created by kfzx-jinjf on 2016/12/28.
+ * Created by Lovememo on 2017/1/2 0002.
  */
-public enum CommonStatus {
-    Y("Y","是"), N("N", "否");
+public enum DtlMode {
+    //传输方式 1-文件 2-联机
+    FILE("1", "文件接口传输"), NET("2", "联机接口传输");
     private String key;
     private String text;
 
-    private CommonStatus(String key,String text) {
+    private DtlMode(String key,String text) {
         this.key = key;
         this.text = text;
     }
@@ -21,18 +22,18 @@ public enum CommonStatus {
         return key;
     }
 
-    public static CommonStatus valueOfCode(String codeStr) {
+    public static DtlMode valueOfCode(String codeStr) {
         String code = null == codeStr ? "" : codeStr;
-        CommonStatus ret = null;
+        DtlMode ret = null;
         switch (code) {
-            case "Y":
-                ret = CommonStatus.Y;
+            case "1":
+                ret = DtlMode.FILE;
                 break;
-            case "N":
-                ret = CommonStatus.N;
+            case "2":
+                ret = DtlMode.NET;
                 break;
             default:
-                ret = CommonStatus.N;
+                ret = DtlMode.FILE;
                 break;
         }
 
